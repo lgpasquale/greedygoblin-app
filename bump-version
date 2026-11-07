@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Bumps the version in Cargo.toml (and Cargo.lock), commits it and tags the
+# commit vMAJOR.MINOR.PATCH.
+# Usage: ./bump-version major|minor|patch
+# Pushing the tag starts the release (.github/workflows/release.yml).
+set -euo pipefail
+
+if [[ $# -ne 1 || ! $1 =~ ^(major|minor|patch)$ ]]; then
+    echo "Usage: $0 major|minor|patch" >&2
+    exit 1
+fi
+
+cd "$(dirname "$0")"
+
+if [[ -n $(git status --porcelain) ]]; then
+    echo "The working tree has uncommitted changes: commit them first." >&2
+    exit 1
+fi
+
+current=$(grep -m1 -E '^version = "[0-9]+\.[0-9]+\.[0-9]+"$' Cargo.toml | cut -d'"' -f2 || true)
+if [[ -z $current ]]; then
+    echo "No version = \"MAJOR.MINOR.PATCH\" line found in Cargo.toml." >&2
+    exit 1
+fi
+
+IFS=. read -r major minor patch <<< "$current"
+case $1 in
+    major) major=$((major + 1)); minor=0; patch=0 ;;
+    minor) minor=$((minor + 1)); patch=0 ;;
+    patch) patch=$((patch + 1)) ;;
+esac
+next="$major.$minor.$patch"
+tag="v$next"
+
+if git rev-parse -q --verify "refs/tags/$tag" > /dev/null; then
+    echo "Tag $tag already exists." >&2
+    exit 1
+fi
+
+# Only the first version line: the one of [package].
+sed -i "0,/^version = \"$current\"$/s//version = \"$next\"/" Cargo.toml
+cargo update --workspace --offline --quiet
+
+git add Cargo.toml Cargo.lock
+git commit -q -m "Release $tag"
+git tag -a "$tag" -m "$tag"
+echo "Bumped $current -> $next, committed and tagged $tag."
+echo "To release: git push origin $(git branch --show-current) $tag"

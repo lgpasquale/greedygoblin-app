@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-pub const DEFAULT_API_URL: &str = "https://wow.pestering-curiosity.com/greedygoblin";
+pub const DEFAULT_API_URL: &str = "https://wow.pestering-curiosity.com";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]

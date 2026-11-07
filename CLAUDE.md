@@ -82,8 +82,8 @@ Region, ruleset and faction are single-choice submenus (check items).
 ## Data source: the API
 
 The base URL is configurable in the config file (no menu item). The default is
-`https://wow.pestering-curiosity.com/greedygoblin`, so the endpoints are
-`https://wow.pestering-curiosity.com/greedygoblin/v1/...`. A local server
+`https://wow.pestering-curiosity.com`, so the endpoints are
+`https://wow.pestering-curiosity.com/v1/...`. A local server
 (`docker compose` in the server repo) listens on `http://127.0.0.1:7008`.
 The API is described in `../greedygoblin-data-server/README.md`;
 that file is the reference. Summary:
@@ -336,8 +336,9 @@ publishes it as a GitHub Release (tag `v<version>`, asset
 - **Linux has no self-update and no packaging**: there the app is used only
   in development, built from source.
 
-To release: bump `version` in `Cargo.toml`, commit, then push a tag
-`v<version>`. The workflow `.github/workflows/release.yml` checks that the tag
+To release: run `./bump-version major|minor|patch` (it bumps `version` in
+`Cargo.toml` and `Cargo.lock`, commits and tags `v<version>`), then push the
+branch and the tag. The workflow `.github/workflows/release.yml` checks that the tag
 matches, runs the tests, builds and publishes the release.
 
 ## Open questions
